@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input List</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+  }
+  #inputForm {
+    margin-top: 50px;
+  }
+  .list-container {
+    margin-top: 20px;
+  }
+  #clearButton {
+    margin-top: 20px;
+  }
+</style>
+</head>
+<body>
+  <h1>Input List</h1>
+  <form id="inputForm">
+    <select id="category">
+      <option value="category1">Lauren</option>
+      <option value="category2">Greg</option>
+      <option value="category3">Category 3</option>
+    </select>
+    <input type="email" id="emailInput" placeholder="Enter your email">
+    
+    <input type="text" id="userInput" placeholder="Enter item">
+    <input type="date" id="dueDate">
+    <button type="submit">Add</button>
+  </form>
+
+  <!-- List containers for each category -->
+  <div id="list-container-category1" class="list-container">
+    <h2>List for Category 1</h2>
+    <ul id="list-category1"></ul>
+  </div>
+  <div id="list-container-category2" class="list-container">
+    <h2>List for Category 2</h2>
+    <ul id="list-category2"></ul>
+  </div>
+  <div id="list-container-category3" class="list-container">
+    <h2>List for Category 3</h2>
+    <ul id="list-category3"></ul>
+  </div>
+
+  <button id="clearButton">Clear Local Storage</button>
+
+  <script>
+    // Get form, list containers, and clear button elements
+    const form = document.getElementById('inputForm');
+    const emailInput = document.getElementById('emailInput');
+    const userInput = document.getElementById('userInput');
+    const dueDateInput = document.getElementById('dueDate');
+    const categorySelect = document.getElementById('category');
+    const clearButton = document.getElementById('clearButton');
+
+    // Function to display the selected list container and hide others
+    function showListContainer(selectedCategory) {
+      const listContainers = document.querySelectorAll('.list-container');
+      listContainers.forEach(container => {
+        if (container.id === `list-container-${selectedCategory}`) {
+          container.style.display = 'block';
+        } else {
+          container.style.display = 'none';
+        }
+      });
+    }
+
+    // Function to load items from local storage when the page loads
+    window.addEventListener('load', function() {
+      const categories = ['category1', 'category2', 'category3'];
+      categories.forEach(category => {
+        const savedItems = JSON.parse(localStorage.getItem(category)) || [];
+        const list = document.getElementById(`list-${category}`);
+        savedItems.forEach(item => {
+          addItemToList(list, item);
+        });
+      });
+    });
+
+    // Function to add an item to the list and save it to local storage
+    function addItemToList(list, item) {
+      const listItem = document.createElement('li');
+      listItem.textContent = item;
+      list.appendChild(listItem);
+    }
+
+    // Function to handle form submission
+    form.addEventListener('submit', function(event) {
+      event.preventDefault(); // Prevent default form submission behavior
+
+      const email = emailInput.value.trim(); // Get the email value and trim any leading/trailing spaces
+      const input = userInput.value.trim(); // Get the input value and trim any leading/trailing spaces
+      const dueDate = dueDateInput.value;
+      const selectedCategory = categorySelect.value;
+
+      // Find the selected list based on the category and add the input value to it
+      const list = document.getElementById(`list-${selectedCategory}`);
+      if (input !== '' && email !== '') {
+        addItemToList(list, `${input} (Book Read: ${dueDate}) - Submitted by: ${email}`);
+
+        // Save the updated list items to local storage based on the selected category
+        const savedItems = JSON.parse(localStorage.getItem(selectedCategory)) || [];
+        savedItems.push(`${input} (Book Read: ${dueDate}) - Submitted by: ${email}`);
+        localStorage.setItem(selectedCategory, JSON.stringify(savedItems));
+      }
+
+      // Clear the input fields
+      emailInput.value = '';
+      userInput.value = '';
+      dueDateInput.value = '';
+    });
+
+    // Function to handle clearing local storage
+    clearButton.addEventListener('click', function() {
+      const categories = ['category1', 'category2', 'category3'];
+      categories.forEach(category => {
+        localStorage.removeItem(category);
+        const list = document.getElementById(`list-${category}`);
+        list.innerHTML = ''; // Clear the displayed list
+      });
+    });
+
+    // Event listener to show the appropriate list container when a category is selected
+    categorySelect.addEventListener('change', function() {
+      const selectedCategory = categorySelect.value;
+      showListContainer(selectedCategory);
+    });
+
+    // Show initial list container based on the default selected category
+    showListContainer(categorySelect.value);
+  </script>
+</body>
+</html>
